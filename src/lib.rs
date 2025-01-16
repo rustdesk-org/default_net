@@ -1,5 +1,11 @@
 #[cfg(target_os = "macos")]
-mod macos;
+#[path = "macos.rs"]
+mod os;
+#[cfg(target_os = "windows")]
+#[path = "win.rs"]
+mod os;
+
+pub use os::get_mac;
 
 pub type ResultType<F, E = anyhow::Error> = anyhow::Result<F, E>;
 
@@ -10,11 +16,10 @@ pub struct MacInfo {
 }
 
 mod test {
-    use super::*;
 
     #[test]
     fn test_get_mac() {
-        let mac = macos::get_mac();
+        let mac = super::get_mac();
         println!("res: {:?}", mac);
     }
 }
