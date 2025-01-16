@@ -1,5 +1,5 @@
 [package]
-name = "default_mac"
+name = "default_net"
 version = "0.1.0"
 edition = "2021"
 

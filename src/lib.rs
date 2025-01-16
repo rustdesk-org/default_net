@@ -4,6 +4,9 @@ mod os;
 #[cfg(target_os = "windows")]
 #[path = "win.rs"]
 mod os;
+#[cfg(target_os = "linux")]
+#[path = "linux.rs"]
+mod os;
 
 pub use os::get_mac;
 
