@@ -11,4 +11,4 @@ regex = "1.10"
 
 
 [target.'cfg(target_os = "windows")'.dependencies]
-windows = { version = "0.52", features = ["Win32_NetworkManagement_IpHelper", "Win32_Networking_WinSock", "Win32_NetworkManagement_Ndis", "Win32_Foundation"] }
+winapi = { version = "0.3", features = ["iphlpapi", "iptypes", "winerror"] }
