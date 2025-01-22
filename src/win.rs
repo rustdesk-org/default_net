@@ -42,12 +42,17 @@ pub fn get_mac() -> ResultType<MacInfo> {
                 if !crate::is_valid_mac(&addr) {
                     bail!("Invalid MAC address format: {}", addr);
                 }
-
-                #[cfg(not(target_pointer_width = "32"))]
-                let adapter_name = construct_string((*ptr).FriendlyName)?;
-                #[cfg(target_pointer_width = "32")]
-                let adapter_name = construct_string(ptr.read_unaligned().FriendlyName)?;
-                let name = adapter_name.to_string_lossy().to_string();
+                #[allow(unused_mut)]
+                #[allow(unused_assignments)]
+                let mut name = String::new();
+                #[cfg(debug_assertions)]
+                {
+                    #[cfg(not(target_pointer_width = "32"))]
+                    let adapter_name = construct_string((*ptr).FriendlyName)?;
+                    #[cfg(target_pointer_width = "32")]
+                    let adapter_name = construct_string(ptr.read_unaligned().FriendlyName)?;
+                    name = adapter_name.to_string_lossy().to_string();
+                }
 
                 return Ok(MacInfo { name, addr });
             }
@@ -204,6 +209,7 @@ pub(crate) fn get_adapters() -> ResultType<AdaptersList> {
     Ok(adapters_list)
 }
 
+#[allow(unused)]
 unsafe fn construct_string(ptr: *mut u16) -> ResultType<OsString> {
     if ptr.is_null() {
         bail!("ptr is null");
@@ -212,6 +218,7 @@ unsafe fn construct_string(ptr: *mut u16) -> ResultType<OsString> {
     Ok(OsStringExt::from_wide(slice))
 }
 
+#[allow(unused)]
 unsafe fn get_null_position(ptr: *mut u16) -> ResultType<usize> {
     if ptr.is_null() {
         bail!("ptr is null");
