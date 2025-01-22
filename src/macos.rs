@@ -1,4 +1,4 @@
-use anyhow::anyhow;
+use anyhow::{anyhow, bail};
 use regex::Regex;
 use std::process::Command;
 
@@ -35,6 +35,10 @@ pub fn get_mac() -> ResultType<MacInfo> {
             .as_str()
             .to_string()
     };
+
+    if !crate::is_valid_mac(&addr) {
+        bail!("Invalid MAC address format: {}", addr);
+    }
 
     Ok(MacInfo {
         name: interface.to_string(),

@@ -1,11 +1,14 @@
 use crate::{MacInfo, ResultType};
-use anyhow::anyhow;
+use anyhow::{anyhow, bail};
 use std::fs;
-use std::path::Path;
+use std::path::PathBuf;
 
 pub fn get_mac() -> ResultType<MacInfo> {
     // Read /proc/net/route to get the default network interface
-    let route_content = fs::read_to_string("/proc/net/route")?;
+    let route_content = match fs::read_to_string("/proc/net/route") {
+        Ok(content) => content,
+        Err(e) => bail!("Failed to read route file: {}", e),
+    };
 
     // Find the network interface with default route
     let default_interface = route_content
@@ -19,14 +22,23 @@ pub fn get_mac() -> ResultType<MacInfo> {
         .ok_or_else(|| anyhow!("Could not find default network interface"))?;
 
     // Build the path to MAC address file
-    let mac_path = format!("/sys/class/net/{}/address", default_interface);
+    let mut mac_path = PathBuf::from("/sys/class/net");
+    mac_path = mac_path.join(default_interface);
+    mac_path = mac_path.join("address");
 
-    if !Path::new(&mac_path).exists() {
-        return Err(anyhow!("MAC address file does not exist: {}", mac_path));
+    if !mac_path.exists() {
+        bail!("MAC address file does not exist: {}", mac_path.display());
     }
 
-    // Read MAC address
-    let mac = fs::read_to_string(&mac_path)?.trim().to_string();
+    // Read and validate MAC address
+    let mac = fs::read_to_string(mac_path)
+        .map_err(|e| anyhow!("Failed to read MAC address: {}", e))?
+        .trim()
+        .to_string();
+
+    if !crate::is_valid_mac(&mac) {
+        bail!("Invalid MAC address format: {}", mac);
+    }
 
     Ok(MacInfo {
         name: default_interface.to_string(),
